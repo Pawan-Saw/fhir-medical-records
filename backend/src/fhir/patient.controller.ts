@@ -29,7 +29,7 @@ export const getAllPatients = async (req: Request, res: Response) => {
 
 export const getPatientById = async (req: Request, res: Response) => {
   try {
-    const patient = await patientService.getPatientById(req.params.id);
+    const patient = await patientService.getPatientById(req.params.id as string);
     if (!patient) {
       return res.status(404).json({ message: 'Patient not found' });
     }
@@ -45,7 +45,7 @@ export const getPatientById = async (req: Request, res: Response) => {
 
 export const updatePatient = async (req: Request, res: Response) => {
   try {
-    const patient = await patientService.updatePatient(req.params.id, req.body);
+    const patient = await patientService.updatePatient(req.params.id as string, req.body);
     if (!patient) {
       return res.status(404).json({ message: 'Patient not found' });
     }
