@@ -15,8 +15,9 @@ const Login = () => {
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
       navigate('/dashboard');
-    } catch (err) {
-      setError('Invalid email or password');
+    } catch (err: any) {
+      const message = err?.response?.data?.message || 'Invalid email or password';
+      setError(message);
     }
   };
 
