@@ -15,7 +15,7 @@ const PatientDetail = () => {
   const fetchPatient = async () => {
     try {
       const res = await getPatientById(id!);
-      setPatient(res.data);
+      setPatient(res.data.data);
       setLoading(false);
     } catch (err) {
       setLoading(false);
