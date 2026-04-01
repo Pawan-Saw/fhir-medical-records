@@ -1,15 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getPatientById } from '../services/api';
+import { getPatientById, createObservation, getObservationsByPatient } from '../services/api';
 
 const PatientDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [patient, setPatient] = useState<any>(null);
+  const [observations, setObservations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({
+    type: '',
+    value: '',
+    unit: '',
+    notes: '',
+  });
 
   useEffect(() => {
     fetchPatient();
+    fetchObservations();
   }, []);
 
   const fetchPatient = async () => {
@@ -19,6 +28,27 @@ const PatientDetail = () => {
       setLoading(false);
     } catch (err) {
       setLoading(false);
+    }
+  };
+
+  const fetchObservations = async () => {
+    try {
+      const res = await getObservationsByPatient(id!);
+      setObservations(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAddObservation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await createObservation(id!, form);
+      setForm({ type: '', value: '', unit: '', notes: '' });
+      setShowForm(false);
+      fetchObservations();
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -62,7 +92,6 @@ const PatientDetail = () => {
             </div>
           </div>
 
-          {/* Patient Details */}
           <div className="grid grid-cols-2 gap-4 mt-4">
             <div className="bg-gray-50 rounded-lg p-3">
               <p className="text-gray-500 text-sm">Birth Date</p>
@@ -85,6 +114,108 @@ const PatientDetail = () => {
               <p className="font-semibold text-gray-800">📍 {patient.address}</p>
             </div>
           </div>
+        </div>
+
+        {/* Observations Section */}
+        <div className="bg-white rounded-xl shadow p-6 mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold text-gray-700">📋 Observations</h3>
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-semibold"
+            >
+              + Add Observation
+            </button>
+          </div>
+
+          {/* Add Observation Form */}
+          {showForm && (
+            <form onSubmit={handleAddObservation} className="mb-6 bg-blue-50 p-4 rounded-lg">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-gray-700 text-sm mb-1">Type</label>
+                  <select
+                    value={form.type}
+                    onChange={(e) => setForm({ ...form, type: e.target.value })}
+                    className="w-full border rounded p-2 text-sm"
+                    required
+                  >
+                    <option value="">Select</option>
+                    <option value="Blood Pressure">Blood Pressure</option>
+                    <option value="Blood Sugar">Blood Sugar</option>
+                    <option value="Heart Rate">Heart Rate</option>
+                    <option value="Temperature">Temperature</option>
+                    <option value="Weight">Weight</option>
+                    <option value="Hemoglobin">Hemoglobin</option>
+                    <option value="Cholesterol">Cholesterol</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm mb-1">Value</label>
+                  <input
+                    value={form.value}
+                    onChange={(e) => setForm({ ...form, value: e.target.value })}
+                    className="w-full border rounded p-2 text-sm"
+                    placeholder="e.g. 120/80"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm mb-1">Unit</label>
+                  <input
+                    value={form.unit}
+                    onChange={(e) => setForm({ ...form, unit: e.target.value })}
+                    className="w-full border rounded p-2 text-sm"
+                    placeholder="e.g. mmHg, mg/dL"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm mb-1">Notes</label>
+                  <input
+                    value={form.notes}
+                    onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                    className="w-full border rounded p-2 text-sm"
+                    placeholder="Optional notes"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3 mt-3">
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700"
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Observations List */}
+          {observations.length === 0 ? (
+            <p className="text-gray-400 text-center py-4">No observations yet</p>
+          ) : (
+            <div className="space-y-3">
+              {observations.map((obs: any) => (
+                <div key={obs.id} className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-semibold text-gray-800">{obs.type}</p>
+                      <p className="text-blue-600 font-bold text-lg">{obs.value} <span className="text-gray-400 text-sm">{obs.unit}</span></p>
+                      {obs.notes && <p className="text-gray-500 text-sm mt-1">📝 {obs.notes}</p>}
+                    </div>
+                    <p className="text-gray-400 text-xs">{new Date(obs.created_at).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Created At */}

@@ -10,7 +10,6 @@ const API = axios.create({
   baseURL: API_BASE_URL,
 });
 
-// Har request mein token automatically add hoga
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -38,5 +37,12 @@ export const getPatientById = (id: string) =>
 
 export const updatePatient = (id: string, data: object) => 
   API.put(`/fhir/r4/Patient/${id}`, data);
+
+// Observation APIs
+export const createObservation = (patient_id: string, data: object) =>
+  API.post(`/fhir/r4/Patient/${patient_id}/observations`, data);
+
+export const getObservationsByPatient = (patient_id: string) =>
+  API.get(`/fhir/r4/Patient/${patient_id}/observations`);
 
 export default API;

@@ -25,6 +25,16 @@ const createTables = async () => {
       gender VARCHAR(50),
       created_at TIMESTAMP DEFAULT NOW()
     );
+
+    CREATE TABLE IF NOT EXISTS observations (
+      id SERIAL PRIMARY KEY,
+      patient_id INTEGER REFERENCES patients(id) ON DELETE CASCADE,
+      type VARCHAR(100) NOT NULL,
+      value VARCHAR(100) NOT NULL,
+      unit VARCHAR(50),
+      notes TEXT,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
   `);
   console.log('✅ Tables created successfully!');
 };
