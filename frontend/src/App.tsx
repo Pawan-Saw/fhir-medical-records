@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import AddPatient from './pages/AddPatient';
+import PatientDetail from './pages/PatientDetail';
 
 const PrivateRoute = ({ children }: { children: JSX.Element }) => {
   const token = localStorage.getItem('token');
@@ -26,6 +27,14 @@ function App() {
           element={
             <PrivateRoute>
               <AddPatient />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/patient/:id"
+          element={
+            <PrivateRoute>
+              <PatientDetail />
             </PrivateRoute>
           }
         />
