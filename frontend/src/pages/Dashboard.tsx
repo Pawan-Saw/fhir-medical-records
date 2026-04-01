@@ -4,6 +4,7 @@ import { getAllPatients } from '../services/api';
 
 const Dashboard = () => {
   const [patients, setPatients] = useState([]);
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -28,6 +29,12 @@ const Dashboard = () => {
     localStorage.removeItem('user');
     navigate('/');
   };
+
+  const filteredPatients = patients.filter((patient: any) =>
+    `${patient.first_name} ${patient.last_name}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -63,7 +70,7 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-gray-700">All Patients</h2>
           <button
             onClick={() => navigate('/add-patient')}
@@ -73,20 +80,32 @@ const Dashboard = () => {
           </button>
         </div>
 
+        {/* Search Bar */}
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="🔍 Search patient by name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-blue-500 shadow-sm"
+          />
+        </div>
+
         {loading ? (
           <div className="flex justify-center items-center h-40">
             <p className="text-gray-400 text-lg">Loading patients...</p>
           </div>
-        ) : patients.length === 0 ? (
+        ) : filteredPatients.length === 0 ? (
           <div className="flex justify-center items-center h-40">
             <p className="text-gray-400 text-lg">No patients found</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {patients.map((patient: any) => (
+            {filteredPatients.map((patient: any) => (
               <div
                 key={patient.id}
-                className="bg-white p-5 rounded-xl shadow hover:shadow-md transition border border-gray-100"
+                onClick={() => navigate(`/patient/${patient.id}`)}
+                className="bg-white p-5 rounded-xl shadow hover:shadow-md transition border border-gray-100 cursor-pointer hover:border-blue-300"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div className="bg-blue-100 text-blue-600 rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">
@@ -101,6 +120,9 @@ const Dashboard = () => {
                   <p>📞 Phone: {patient.phone}</p>
                   <p>📍 Address: {patient.address}</p>
                   <p>⚧ Gender: {patient.gender}</p>
+                </div>
+                <div className="mt-3 text-right">
+                  <span className="text-blue-500 text-sm font-semibold">View Details →</span>
                 </div>
               </div>
             ))}
