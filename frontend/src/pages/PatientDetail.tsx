@@ -1,3 +1,5 @@
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getPatientById, createObservation, getObservationsByPatient } from '../services/api';
@@ -40,6 +42,18 @@ const PatientDetail = () => {
     }
   };
 
+  const handleExportPDF = async () => {
+    const element = document.getElementById('patient-report');
+    if (!element) return;
+    const canvas = await html2canvas(element);
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`${patient.first_name}_${patient.last_name}_report.pdf`);
+  };
+
   const handleAddObservation = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -69,15 +83,23 @@ const PatientDetail = () => {
       {/* Navbar */}
       <nav className="bg-blue-600 text-white px-6 py-4 flex justify-between items-center shadow-lg">
         <h1 className="text-xl font-bold">🏥 FHIR Medical Records</h1>
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="bg-white text-blue-600 px-4 py-1 rounded-lg font-semibold hover:bg-gray-100 transition"
-        >
-          ← Back
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={handleExportPDF}
+            className="bg-green-500 text-white px-4 py-1 rounded-lg font-semibold hover:bg-green-600 transition"
+          >
+            📄 Export PDF
+          </button>
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="bg-white text-blue-600 px-4 py-1 rounded-lg font-semibold hover:bg-gray-100 transition"
+          >
+            ← Back
+          </button>
+        </div>
       </nav>
 
-      <div className="max-w-2xl mx-auto p-6">
+      <div className="max-w-2xl mx-auto p-6" id="patient-report">
         {/* Patient Header */}
         <div className="bg-white rounded-xl shadow p-6 mb-6">
           <div className="flex items-center gap-4 mb-4">
@@ -128,7 +150,6 @@ const PatientDetail = () => {
             </button>
           </div>
 
-          {/* Add Observation Form */}
           {showForm && (
             <form onSubmit={handleAddObservation} className="mb-6 bg-blue-50 p-4 rounded-lg">
               <div className="grid grid-cols-2 gap-3">
@@ -197,7 +218,6 @@ const PatientDetail = () => {
             </form>
           )}
 
-          {/* Observations List */}
           {observations.length === 0 ? (
             <p className="text-gray-400 text-center py-4">No observations yet</p>
           ) : (
